@@ -65,8 +65,21 @@ server.mount_proc("/entry") { |req, res|
   end
 }
 
-  trap(:INT) do
-    server.shutdown
+server.mount_proc("/retrieve") do |req, res|
+  a = ['id','title','content','place','event_date']
+  a.delete_if {|name| req.query[name] == ""}
+  if a.empty?
+    where_data = ""
+  else
+    a.map! {|name| "#{name} = '#{req.query[name]}'"}
+    where_data = "where " + a.join(' or ')
   end
+  template = ERB.new(File.read('retrieved.erb'))
+  res.body << template.result( binding )
+end
 
-  server.start
+trap(:INT) do
+  server.shutdown
+end
+
+server.start

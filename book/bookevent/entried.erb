@@ -17,6 +17,7 @@
       <th>項目名</th><th>登録データ</th>
       <% ['id', 'title', 'content', 'place', 'event_date'].each do |name| %>
         <tr>
+          <%# ここでencodingエラーが出るためforce_encodingを追加で付けている %>
           <td><%= name.force_encoding("UTF-8") %></td>
           <td><%= req.query[name].force_encoding("UTF-8") %></td>
         </tr>
