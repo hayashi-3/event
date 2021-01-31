@@ -1,9 +1,11 @@
 <% require 'rubygems' %>
 <% require 'dbi' %>
+<% require 'date' %>
 
 <% dbh = DBI.connect( 'DBI:SQLite3:book_event_sqlite.db' ) %>
 
-<% row = dbh.select_one("select * from book_events where id=\'#{target_id}\'") %>
+<% sth = dbh.execute("select * from book_events where id =\'#{target_id}\';") %>
+
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -12,26 +14,28 @@
   </head>
   <body>
     <h1>イベント管理</h1>
-    <h2>イベントデータの削除</h2>
+    <h2>イベントデータの修正</h2>
     <p>このデータを削除します|
       <a href="list.erb">イベントデータの表示</a>|
       <a href="index.html">メニュー画面に戻る</a>
     </p>
     <hr>
 
-    <form method="post" action="delete">
+    <form method="post" action="edit">
       <input type="hidden" name="id" value="<%= target_id %>" />
-      <table border>
-        <tr>
-          <th>項目名</th><th>削除データ</th>
-          <% row.each_with_name do |val, name| %>
+      <table>
+        <% sth.each do |row| %>
+          <th>項目名</th><th>修正データ</th>
+          <% ['id','title','content','place','event_date'].each do |name| %>
             <tr>
-              <td><%= name %></td><td><%= val.to_s %></td>
-              <input type="hidden" name="<%= name %>" value="<%= val.to_s %>" />
+              <td><%= name %></td>
+              <td><input name="<%= name %>" value="<%= row[name] %>"
+              size="60" /></td>
             </tr>
           <% end %>
+        <% end %>
       </table>
-      <input type="submit" value="削除を実行" />
+      <input type="submit" value="修正を実行" />
     </form>
     <hr>
   </body>

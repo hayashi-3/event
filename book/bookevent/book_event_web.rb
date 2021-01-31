@@ -28,7 +28,7 @@ end
 
   server.mount_proc("/list") { |req, res|
   p req.query
-  if /(.*)¥.(delete|edit)$/ =~ req.query['operation']
+  if /(.*)\.(delete|edit)$/ =~ req.query['operation']
     target_id = $1
     operation = $2
 
@@ -77,6 +77,31 @@ server.mount_proc("/retrieve") do |req, res|
   template = ERB.new(File.read('retrieved.erb'))
   res.body << template.result( binding )
 end
+
+server.mount_proc("/edit") { |req, res|
+  dbh = DBI.connect( 'DBI:SQLite3:book_event_sqlite.db' )
+  dbh.do("update book_events set id='#{req.query['id']}',
+    title='#{req.query['title']}',content='#{req.query['content']}',
+    place='#{req.query['place']}',event_date='#{req.query['event_date']}'
+    where id='#{req.query['id']}';")
+
+  dbh.disconnect
+
+  template = ERB.new( File.read('edited.erb') )
+  res.body << template.result( binding )
+}
+
+server.mount_proc("/delete") { |req, res|
+  p req.query
+
+  dbh = DBI.connect( 'DBI:SQLite3:book_event_sqlite.db' )
+  dbh.do("delete from book_events where id='#{req.query['id']}';")
+
+  dbh.disconnect
+
+  template = ERB.new( File.read('deleted.erb') )
+  res.body << template.result( binding )
+}
 
 trap(:INT) do
   server.shutdown
